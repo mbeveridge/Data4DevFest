@@ -68,11 +68,11 @@ accidents %>% count(municipio)           # 1 row ("BOGOTA"). `n` is 9973
 accidents %>% count(clase)               # 7 rows. `n` is 1 ("INCENDIO") to 8494 ("CHOQUE")
 ```
 
-(To begin with we'll focus on `localidad` = ENGATIVA)
+Initial data visialisation, to see if there might be a location/ time pattern
 
 ```{r}
 accidents <- accidents %>%
-  mutate(date = make_date(year, month, day), n = n())
+  mutate(date = make_date(year, month, day), week_no = week(date), week_day = wday(date, label = TRUE), n = n())
 
 
 ggplot(accidents, aes(date)) +
@@ -82,5 +82,26 @@ ggplot(accidents, aes(date)) +
 ggplot(accidents, aes(x, y, colour = localidad)) +
   geom_point()
 ```
+
+
+Maybe look at a time-based model (especially if there is data for other years too, in which case start with localidad=ENGATIVA). And/or a visualisation (like ACotgreave? if I can get week#). Or time of day (model/viz). Or connected to streetlights (if there's a joining field)
+
+```{r}
+accidents2 <- accidents %>%
+  group_by(week_no, week_day) %>%
+  summarise(n = n())
+
+accidents2
+
+ggplot(accidents2, aes(week_day, week_no)) +
+  geom_point(aes(colour = n, size = n, alpha = 0.5))
+```
+
+
+
+
+
+
+
 
 
