@@ -1,3 +1,10 @@
+---
+title: "Bogota car accidents 2014"
+output:
+  github_document: default
+  html_notebook: default
+---
+
 # Bogota car accidents 2014
 
 ```{r setup}
@@ -72,8 +79,9 @@ Initial data visialisation, to see if there might be a location/ time pattern
 
 ```{r}
 accidents <- accidents %>%
-  mutate(date = make_date(year, month, day), week_no = week(date), week_day = wday(date, label = TRUE), n = n())
+  mutate(date = make_date(year, month, day), week_no = week(date), week_day = wday(date, label = TRUE), hour = as.numeric(hour), n = n())
 
+accidents
 
 ggplot(accidents, aes(date)) +
   geom_histogram() +
@@ -95,11 +103,53 @@ accidents2
 
 ggplot(accidents2, aes(week_day, week_no)) +
   geom_point(aes(colour = n, size = n, alpha = 0.5))
+
+ggplot(accidents2, aes(week_no, week_day)) +
+  geom_point(aes(colour = n, size = n, alpha = 0.5))
 ```
 
 
+```{r}
+accidents3 <- accidents %>%
+  group_by(month, week_day, hour, localidad) %>%
+  summarise(n = n())
+
+accidents3
+
+ggplot(accidents3, aes(week_day, hour)) +
+  geom_point(aes(colour = n, size = n, alpha = 0.5))
+
+# Create a factor, to order the hours correctly (0-23) on the plot axis
+# library(forcats)
+
+# hour_levels <- c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23")
+
+# y1 <- factor(hour, levels = hour_levels)
+# Couldn't fix an error here. Instead converted `hour` in `accidents` from <chr> to numeric
+# y1
+
+# ggplot(accidents3, aes(week_day, y1)) +
+#   geom_point(aes(colour = n, size = n, alpha = 0.5))
+
+ggplot(accidents3, aes(week_day, hour)) +
+  geom_point(aes(colour = n, size = n, alpha = 0.5)) +
+    facet_wrap(~ localidad)
+
+ggplot(accidents3, aes(week_day, hour)) +
+  geom_point(aes(colour = n, size = n, alpha = 0.5)) +
+    facet_wrap(~ month)
+```
 
 
+```{r}
+ggplot(accidents3, aes(week_day, hour)) +
+  geom_point(aes(colour = n, size = n, alpha = 0.5)) +
+    facet_grid(localidad ~ month)
+
+ggplot(accidents3, aes(week_day, hour)) +
+  geom_point(aes(colour = n, size = n, alpha = 0.5)) +
+    facet_grid(localidad ~ month)
+```
 
 
 
