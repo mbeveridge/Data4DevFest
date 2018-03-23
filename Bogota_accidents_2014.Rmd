@@ -111,7 +111,7 @@ ggplot(accidents2, aes(week_no, week_day)) +
 
 ```{r}
 accidents3 <- accidents %>%
-  group_by(month, week_day, hour, localidad) %>%
+  group_by(week_day, hour) %>%
   summarise(n = n())
 
 accidents3
@@ -131,27 +131,64 @@ ggplot(accidents3, aes(week_day, hour)) +
 # ggplot(accidents3, aes(week_day, y1)) +
 #   geom_point(aes(colour = n, size = n, alpha = 0.5))
 
-ggplot(accidents3, aes(week_day, hour)) +
-  geom_point(aes(colour = n, size = n, alpha = 0.5)) +
-    facet_wrap(~ localidad)
+#--
 
-ggplot(accidents3, aes(week_day, hour)) +
-  geom_point(aes(colour = n, size = n, alpha = 0.5)) +
-    facet_wrap(~ month)
+# ggplot(accidents3, aes(hour, n)) +
+#   geom_density(aes(colour = week_day)) +
+#   facet_wrap(~week_day)
+# Error in eval(substitute(list(...)), `_data`, parent.frame()) : object 'y' not found
 ```
 
 
 ```{r}
-ggplot(accidents3, aes(week_day, hour)) +
+accidents4 <- accidents %>%
+  group_by(month, week_day, hour, localidad) %>%  # error: grouping gives rings on viz not total
+  summarise(n = n())
+
+accidents4
+
+ggplot(accidents4, aes(week_day, hour)) +
+  geom_point(aes(colour = n, size = n, alpha = 0.5)) +
+    facet_wrap(~ localidad)
+
+ggplot(accidents4, aes(week_day, hour)) +
+  geom_point(aes(colour = n, size = n, alpha = 0.5)) +
+    facet_wrap(~ month)
+
+ggplot(accidents4, aes(week_day, hour)) +
   geom_point(aes(colour = n, size = n, alpha = 0.5)) +
     facet_grid(localidad ~ month)
 
-ggplot(accidents3, aes(week_day, hour)) +
+ggplot(accidents4, aes(week_day, hour)) +
   geom_point(aes(colour = n, size = n, alpha = 0.5)) +
     facet_grid(localidad ~ month)
 ```
 
 
+Try to create model of variation by hour. Start with localidad=ENGATIVA
+
+```{r}
+accidents5 <- accidents %>%
+  group_by(hour) %>%
+  summarise(n = n())
+
+accidents5
+
+ggplot(accidents5, aes(hour, n)) +
+  geom_line()
+
+ggplot(accidents3, aes(hour, n)) +
+  geom_line(aes(colour = week_day))
+
+ggplot(accidents3, aes(hour, n)) +
+  geom_line(aes(colour = week_day)) +
+  facet_wrap(~week_day)
+
+# ggplot(accidents4, aes(hour, n)) +
+#  geom_line(aes(colour = week_day)) +
+#  facet_grid(. ~ week_day)
+# Error in combine_vars(data, params$plot_env, cols, drop = params$drop) : At least one layer must contain all variables used for facetting
+```
 
 
 
