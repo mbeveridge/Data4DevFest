@@ -136,7 +136,7 @@ ggplot(accidents3, aes(week_day, hour)) +
 # ggplot(accidents3, aes(hour, n)) +
 #   geom_density(aes(colour = week_day)) +
 #   facet_wrap(~week_day)
-# Error in eval(substitute(list(...)), `_data`, parent.frame()) : object 'y' not found
+# "Error in eval(substitute(list(...)), `_data`, parent.frame()) : object 'y' not found""
 ```
 
 
@@ -184,10 +184,14 @@ ggplot(accidents3, aes(hour, n)) +
   geom_line(aes(colour = week_day)) +
   facet_wrap(~week_day)
 
+ggplot(accidents3, aes(hour, n)) +
+  geom_point(aes(colour = week_day)) +
+  facet_wrap(~week_day)
+
 # ggplot(accidents4, aes(hour, n)) +
 #  geom_line(aes(colour = week_day)) +
 #  facet_grid(. ~ week_day)
-# Error in combine_vars(data, params$plot_env, cols, drop = params$drop) : At least one layer must contain all variables used for facetting
+# "Error in combine_vars(data, params$plot_env, cols, drop = params$drop) : At least one layer must contain all variables used for facetting""
 ```
 
 
