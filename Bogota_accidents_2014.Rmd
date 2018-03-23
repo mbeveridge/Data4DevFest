@@ -1,0 +1,86 @@
+# Bogota car accidents 2014
+
+```{r setup}
+library(tidyverse)
+library(lubridate)
+```
+
+
+## Data import
+
+Data downloaded from https://docs.google.com/spreadsheets/d/1lgR-UpR9v9lmtoeK1ZhlVfs0FBj1xXz_eImhcrSI4Q0/
+
+```{r}
+accidents_raw <- read_csv("data/Car_Accidents_2014_Bogota.csv")
+accidents_raw
+```
+
+* `the_geom` <chr> : geom
+* `cartodb_id` <int>        ???
+* `codigo_accidente` <int>  ??? : Accident code from police ?
+* `fecha_ocurrencia` <date>       2014-10-29 : Date
+* `hora_occurencia` <chr>   ???   14:10:00 : Time
+* `gravedad` <chr> : Gravity (severity)
+* `objectid` <int>          ???
+* `localidad` <chr> : Location
+* `municipio` <chr> : Municipality
+* `x` <dbl> : Longitude
+* `y` <dbl> : Latitude
+* `timedate` <S3: POSIXct>        2014-10-29 14:10:00
+* `clase` <chr> : Class [choque = shock; atropello = ; otro = ; caida de ocupante = ]
+
+
+
+
+```{r}
+# The data is for one year (2014). If we want to filter by month (etc), need a `month` variable first. Could use **lubridate**, or `separate()` ...The former avoids 10/11/12 coming before 2/3/4/etc, but the latter should also be ok in plots if using integers
+
+?separate
+
+accidents <- accidents_raw %>%
+  separate(fecha_ocurrencia, c("year", "month", "day"), "-", convert = TRUE) %>%
+                                              # `convert` gets y&m&d as integers
+    filter(year == 2014)                      # 17 rows from 2013 filtered out
+
+accidents <- accidents %>%
+  separate(hora_ocurrencia, c("hour", "minute", "second"), ":", convert = TRUE) %>%
+    filter(hour != "1899-12-30")              # 9 rows filtered out
+
+accidents                                     # (9973 rows x 17 cols)
+```
+
+
+## Basic EDA
+
+```{r}
+# Just to get a sense of what's going on
+
+accidents %>% count(the_geom)            # 6921 rows (so not unique)
+accidents %>% count(the_geom) %>% count(n)  # 21 rows (1 to 22, without 18)
+accidents %>% count(cartodb_id)          # 9973 rows (confirmed as unique)
+accidents %>% count(codigo_accidente)    # 9973 rows (unique). Seem to be 5e+05 or 4e+06
+accidents %>% count(month)               # 12 rows. `n` is 485-1584. Higher in Oct/Nov/Dec
+accidents %>% count(hour)                # 24 rows. `n` is 51-722 (2am, 2pm)
+accidents %>% count(gravedad)            # 3 rows. "CON HERIDOS", "CON MUERTOS", "SOLO DANOS"
+accidents %>% count(objectid)            # 9973 rows (confirmed as unique)
+accidents %>% count(localidad)           # 19 rows. `n` is 52-1176
+accidents %>% count(municipio)           # 1 row ("BOGOTA"). `n` is 9973
+accidents %>% count(clase)               # 7 rows. `n` is 1 ("INCENDIO") to 8494 ("CHOQUE")
+```
+
+(To begin with we'll focus on `localidad` = ENGATIVA)
+
+```{r}
+accidents <- accidents %>%
+  mutate(date = make_date(year, month, day), n = n())
+
+
+ggplot(accidents, aes(date)) +
+  geom_histogram() +
+  facet_wrap(~ localidad)
+
+ggplot(accidents, aes(x, y, colour = localidad)) +
+  geom_point()
+```
+
+
