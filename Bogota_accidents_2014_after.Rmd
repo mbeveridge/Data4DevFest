@@ -1,0 +1,198 @@
+---
+title: "Bogota car accidents 2014"
+output:
+  github_document: default
+  html_notebook: default
+---
+
+# Bogota car accidents 2014
+
+```{r setup}
+library(tidyverse)
+library(lubridate)
+```
+
+
+## Data import
+
+Data downloaded from https://docs.google.com/spreadsheets/d/1lgR-UpR9v9lmtoeK1ZhlVfs0FBj1xXz_eImhcrSI4Q0/
+
+```{r}
+accidents_raw <- read_csv("data/Car_Accidents_2014_Bogota.csv")
+accidents_raw
+
+# Odd to have exactly 10000 rows, if the dataset is supposed to be complete
+```
+
+* `the_geom` <chr> : geom
+* `cartodb_id` <int> : reference#
+* `codigo_accidente` <int> : Accident code from police ?
+* `fecha_ocurrencia` <date> eg. 2014-10-29 : Date
+* `hora_occurencia` <chr>   eg. 14:10:00 : Time
+* `gravedad` <chr> : Gravity (severity)
+* `objectid` <int> : reference#
+* `localidad` <chr> : Location
+* `municipio` <chr> : Municipality
+* `x` <dbl> : Longitude
+* `y` <dbl> : Latitude
+* `timedate` <S3: POSIXct> : eg. 2014-10-29 14:10:00
+* `clase` <chr> : Class [choque = shock; atropello = ; otro = ; caida de ocupante = ]
+
+
+
+
+```{r}
+# The data is for one year (2014). If we want to filter by month (etc), need a `month` variable first. Choose to use **lubridate** (because we have `timedate`). Could instead `separate()` the `fecha_ocurrencia` (and) and `hora_occurencia` (time) fields into components, but there are 9 rows where `hora_occurencia` says "1899-12-30" (instead of 00:00:00, that `timedate` says), and we'd have to filter/edit those
+
+accidents <- accidents_raw %>%
+    filter(year(timedate) == 2014)            # 18 rows from 2013 filtered out
+
+accidents                                     # (9982 rows x 13 cols)
+```
+
+
+## Basic EDA
+
+```{r}
+# Just to get a sense of what's going on
+
+accidents %>% count(the_geom)            # 6924 rows (not unique, some accidents at same x&y)
+accidents %>% count(the_geom) %>% count(n)  # 21 rows (1 to 22, without 18)
+accidents %>% count(cartodb_id)          # 9982 rows (unique)
+accidents %>% count(codigo_accidente)    # 9982 rows (unique). Seem to be 5e+05 or 4e+06
+accidents %>% count(month(timedate))     # 12 rows. `n` is 485-1584. Higher in Oct/Nov/Dec
+accidents %>% count(hour(timedate))      # 24 rows. `n` is 51-722 (2am, 2pm)
+accidents %>% count(gravedad)            # 3 rows. "CON HERIDOS", "CON MUERTOS", "SOLO DANOS"
+accidents %>% count(objectid)            # 9982 rows (unique)
+accidents %>% count(localidad)           # 19 rows. `n` is 52-1177
+accidents %>% count(municipio)           # 1 row ("BOGOTA"). `n` is 9982 --> IGNORE
+accidents %>% count(clase)               # 7 rows. `n` is 1 ("INCENDIO") to 8502 ("CHOQUE")
+```
+
+Initial data visialisation, to see if there might be a location/ time pattern
+
+```{r}
+accidents <- accidents %>%
+  mutate(week_no = week(timedate), week_day = wday(timedate, label = TRUE))
+
+accidents %>%
+  group_by(yday = yday(timedate)) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(yday, count)) +                  # per 'day of the year' (0 is 1Jan, 365 is 31Dec)
+  geom_point() +
+  geom_smooth()
+
+ggplot(accidents, aes(timedate)) +
+  geom_histogram() +
+  facet_wrap(~ localidad)
+
+ggplot(accidents, aes(x, y, colour = localidad)) +        # a rough map of the 'localidads'
+  geom_point()
+```
+
+
+Maybe look at a time-based model (especially if there is data for other years too, in which case start with localidad=ENGATIVA). And/or a visualisation (like ACotgreave? if I can get week#). Or time of day (model/viz). Or connected to streetlights (if there's a joining field)
+
+```{r}
+# Weeks (`week_no`)
+
+accidents %>%
+  group_by(week_no, week_day) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(week_no, week_day)) +
+  geom_point(aes(colour = count, size = count, alpha = 0.5))
+
+accidents %>%
+  group_by(week_no) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(week_no, count)) +
+  geom_point() +
+  geom_smooth()
+```
+
+
+```{r}
+# Hours
+
+accidents %>%
+  group_by(week_day, hour = hour(timedate)) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(hour, week_day)) +
+  geom_point(aes(colour = count, size = count, alpha = 0.5))
+
+accidents %>%
+  group_by(hour = hour(timedate)) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(hour)) +
+  geom_density()                             
+
+# accidents %>%
+#   group_by(hour = hour(timedate)) %>%
+#   summarise(count = n()) %>%
+#   ggplot(aes(hour)) +
+#   geom_density(aes(colour = week_day)) +            # "object 'week_day' not found" ?
+#   facet_wrap(~ week_day) # "Error in combine_vars(data, params$plot_env, vars, drop = params$drop) : At least one layer must contain all variables used for facetting" ?"
+
+accidents %>%
+  group_by(week_day, hour = hour(timedate)) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(hour, count)) +
+  geom_line(aes(colour = week_day)) +
+  facet_wrap(~ week_day)
+```
+
+
+```{r}
+# Localidads
+
+accidents4 <- accidents %>%
+  group_by(month = month(timedate), week_day, hour = hour(timedate), localidad) %>%
+  summarise(count = n())
+
+#1
+accidents4
+
+#2
+ggplot(accidents4, aes(hour)) +
+  geom_density() +
+  facet_wrap(~ localidad)
+
+#3
+ggplot(accidents4, aes(hour)) +
+  geom_density(aes(colour = week_day)) +
+  facet_wrap(~ localidad)
+
+#4
+ggplot(accidents4, aes(hour)) +
+  geom_density() +
+  facet_wrap(~ month)
+
+#5
+ggplot(accidents4, aes(hour)) +
+  geom_density() +
+  facet_grid(localidad ~ month)
+
+#6
+accidents4 %>%
+  filter(localidad == "ENGATIVA") %>%
+  ggplot(aes(hour)) +
+  geom_density() +
+  facet_wrap(~ month)
+
+#7
+accidents4 %>%
+  filter(localidad == "ENGATIVA") %>%
+  ggplot(aes(hour)) +
+  geom_density(aes(fill = month)) +
+  facet_grid(month ~ .)
+```
+
+
+Try to create model of variation by hour. Start with localidad=ENGATIVA
+
+```{r}
+
+```
+
+
+
