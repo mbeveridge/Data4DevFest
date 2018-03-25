@@ -59,7 +59,7 @@ accidents                                     # (9982 rows x 13 cols)
 accidents %>% count(the_geom)            # 6924 rows (not unique, some accidents at same x&y)
 accidents %>% count(the_geom) %>% count(n)  # 21 rows (1 to 22, without 18)
 accidents %>% count(cartodb_id)          # 9982 rows (unique)
-accidents %>% count(codigo_accidente)    # 9982 rows (unique). Seem to be 5e+05 or 4e+06
+accidents %>% count(codigo_accidente)    # 9982 rows (unique). ~5e+05 (?) or 4e+06 (`objectid`)
 accidents %>% count(month(timedate))     # 12 rows. `n` is 485-1584. Higher in Oct/Nov/Dec
 accidents %>% count(hour(timedate))      # 24 rows. `n` is 51-722 (2am, 2pm)
 accidents %>% count(gravedad)            # 3 rows. "CON HERIDOS", "CON MUERTOS", "SOLO DANOS"
@@ -84,11 +84,20 @@ accidents %>%
   geom_smooth()
 
 #2
+accidents %>%
+  filter(month(timedate) == 1) %>%
+  group_by(yday = yday(timedate)) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(yday, count)) +                           # 'day of the year' (0:1Jan to 365:31Dec)
+  geom_point() +
+  geom_smooth()
+
+#3
 ggplot(accidents, aes(timedate)) +
   geom_histogram() +
   facet_wrap(~ localidad)
 
-#3
+#4
 ggplot(accidents, aes(x, y, colour = localidad)) +     # rough map of the 'localidads'
   geom_point()
 ```
@@ -99,18 +108,27 @@ Maybe look at a time-based model (especially if there is data for other years to
 ```{r}
 # Weeks (`week_no`)
 
+#1
 accidents %>%
   group_by(week_no, week_day) %>%
   summarise(count = n()) %>%
   ggplot(aes(week_no, week_day)) +
   geom_point(aes(colour = count, size = count, alpha = 0.5))
 
+#2
 accidents %>%
   group_by(week_no) %>%
   summarise(count = n()) %>%
   ggplot(aes(week_no, count)) +
   geom_point() +
   geom_smooth()
+
+#3
+accidents %>%
+  group_by(week_no) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(week_no, count)) +
+  geom_line()
 ```
 
 
@@ -191,11 +209,55 @@ accidents4 %>%
 ```
 
 
-Try to create model of variation by hour. Start with localidad=ENGATIVA
+
+Doesn't appear to be a 'strong enough' repeating pattern in 2014, to make it interesting to fit a model to it with **modelr**. And have been unable to 'union' 2014 with the similar-ish 2015&2016 datasets I downloaded, (using Tableau Maestro beta 4), to see if patterns are repeated year-on-year.
+
+So forget about a model and look at the 'Street Lights' dataset, to see if that 'sheds any light' on (location) patterns in the accidents
 
 ```{r}
-
+lights_raw <- read_csv("data/Street_Lights.csv")
+lights_raw
 ```
 
+
+
+
+```{r}
+#1
+ggplot(lights_raw, aes(x, y, colour = localidad)) +     # rough map of the 'localidads'
+  geom_point()
+
+#2
+ggplot(data=lights_raw, aes(x, y)) +
+  geom_point(aes(shape = "."), colour = "red") +
+  geom_point(data=accidents, aes(shape = ".", stroke = 0, alpha = 0.5), colour = "black")
+
+#3
+accidents_ENGATIVA <- accidents %>%
+  filter(localidad == "ENGATIVA")
+
+lights_ENGATIVA <- lights_raw %>%
+  filter(localidad == "ENGATIVA")
+
+ggplot(data=lights_ENGATIVA, aes(x, y)) +
+  geom_point(aes(shape = "."), size = 3, colour = "black") +
+  geom_point(data=accidents_ENGATIVA, aes(shape = ".", stroke = 0, alpha = 0.5), colour = "blue")
+
+#4
+deaths_ENGATIVA <- accidents %>%
+  filter(localidad == "ENGATIVA") %>%
+  filter(gravedad == "CON MUERTOS")
+
+lights_ENGATIVA <- lights_raw %>%
+  filter(localidad == "ENGATIVA")
+
+ggplot(data=lights_ENGATIVA, aes(x, y)) +
+  geom_point(aes(shape = "."), size = 3, colour = "black") +
+  geom_point(data=deaths_ENGATIVA, aes(shape = ".", stroke = 0), size = 2, colour = "red")
+```
+
+There are more accident locations in ENGATIVA than there are street lights. And although some of those street lights have no accidents next to them (including clusters in the SouthEast), the majority does have. So it's not as simple as saying the patterns are connected (let alone that street lights prevent accidents)
+
+However, only 3 of 11 deaths was next to a street light (in areas where other accidents were happening), so that's a slightly stronger (visual) case that the lights have a positive effect
 
 
