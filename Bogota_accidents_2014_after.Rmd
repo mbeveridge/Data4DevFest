@@ -75,18 +75,21 @@ Initial data visialisation, to see if there might be a location/ time pattern
 accidents <- accidents %>%
   mutate(week_no = week(timedate), week_day = wday(timedate, label = TRUE))
 
+#1
 accidents %>%
   group_by(yday = yday(timedate)) %>%
   summarise(count = n()) %>%
-  ggplot(aes(yday, count)) +                  # per 'day of the year' (0 is 1Jan, 365 is 31Dec)
+  ggplot(aes(yday, count)) +                           # 'day of the year' (0:1Jan to 365:31Dec)
   geom_point() +
   geom_smooth()
 
+#2
 ggplot(accidents, aes(timedate)) +
   geom_histogram() +
   facet_wrap(~ localidad)
 
-ggplot(accidents, aes(x, y, colour = localidad)) +        # a rough map of the 'localidads'
+#3
+ggplot(accidents, aes(x, y, colour = localidad)) +     # rough map of the 'localidads'
   geom_point()
 ```
 
@@ -114,12 +117,14 @@ accidents %>%
 ```{r}
 # Hours
 
+#1
 accidents %>%
   group_by(week_day, hour = hour(timedate)) %>%
   summarise(count = n()) %>%
   ggplot(aes(hour, week_day)) +
   geom_point(aes(colour = count, size = count, alpha = 0.5))
 
+#2
 accidents %>%
   group_by(hour = hour(timedate)) %>%
   summarise(count = n()) %>%
@@ -133,6 +138,7 @@ accidents %>%
 #   geom_density(aes(colour = week_day)) +            # "object 'week_day' not found" ?
 #   facet_wrap(~ week_day) # "Error in combine_vars(data, params$plot_env, vars, drop = params$drop) : At least one layer must contain all variables used for facetting" ?"
 
+#3
 accidents %>%
   group_by(week_day, hour = hour(timedate)) %>%
   summarise(count = n()) %>%
@@ -150,36 +156,33 @@ accidents4 <- accidents %>%
   summarise(count = n())
 
 #1
-accidents4
-
-#2
 ggplot(accidents4, aes(hour)) +
   geom_density() +
   facet_wrap(~ localidad)
 
-#3
+#2
 ggplot(accidents4, aes(hour)) +
   geom_density(aes(colour = week_day)) +
   facet_wrap(~ localidad)
 
-#4
+#3
 ggplot(accidents4, aes(hour)) +
   geom_density() +
   facet_wrap(~ month)
 
-#5
+#4
 ggplot(accidents4, aes(hour)) +
   geom_density() +
   facet_grid(localidad ~ month)
 
-#6
+#5
 accidents4 %>%
   filter(localidad == "ENGATIVA") %>%
   ggplot(aes(hour)) +
   geom_density() +
   facet_wrap(~ month)
 
-#7
+#6
 accidents4 %>%
   filter(localidad == "ENGATIVA") %>%
   ggplot(aes(hour)) +
