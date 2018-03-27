@@ -17,6 +17,10 @@ hashtags : #Data4DevFest #BristolDataDive
 
 "Opportunity to engage with the Global Partnership for Sustainable Development Data’s API Highways data infrastructure, and with experts from CARTO, Datavized, Urban Things, and the Bristol City Council Innovation Team. There will also be a series of flash talks from data for development experts representing Bristol, Bogota, and Sierra Leone"
 
+...
+
+"Using two or more data sets, participants will create a visualization that extracts insights related to cities, transportation, and the SDGs"
+
 ---
 Data for Development Festival [21-23 March 2018] :
 
