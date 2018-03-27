@@ -11,11 +11,11 @@
 
 hashtags : #Data4DevFest #BristolDataDive
 
-"The Bristol Data Dive, part of the Data for Development Festival, is an opportunity to play with and explore data for sustainable development in an informal yet energetic setting. Engage with our team of experts, meet new people, learn, and apply your unique skills to advance the use of data for sustainable development and social good"
+"An opportunity to play with and explore data for sustainable development in an informal yet energetic setting. Engage with our team of experts, meet new people, learn, and apply your unique skills to advance the use of data for sustainable development and social good"
 
 ...
 
-"Format: The data dive will give participants the opportunity to engage with the Global Partnership for Sustainable Development Data’s API Highways data infrastructure, and with experts from CARTO, Datavized, Urban Things, and the Bristol City Council Innovation Team. There will also be a series of flash talks from data for development experts representing Bristol, Bogota, and Sierra Leone"
+"Opportunity to engage with the Global Partnership for Sustainable Development Data’s API Highways data infrastructure, and with experts from CARTO, Datavized, Urban Things, and the Bristol City Council Innovation Team. There will also be a series of flash talks from data for development experts representing Bristol, Bogota, and Sierra Leone"
 
 ---
 Data for Development Festival [21-23 March 2018] :
