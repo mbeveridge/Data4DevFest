@@ -5,7 +5,7 @@
 
 
 
-[event page](http://www.data4sdgs.org/news/bristol-data-dive)
+[event registration](http://www.data4sdgs.org/news/bristol-data-dive)
 
 ["Data Dive Tool Kit"](https://docs.google.com/document/d/1hMf09ZC892o3yZCgCd64l6i92M5lVGxmOLLk7JZDYk0/edit)
 
@@ -15,10 +15,10 @@ hashtags : #Data4DevFest #BristolDataDive
 
 ...
 
-"Format: The data dive will give participants the opportunity to engage with the Global Partnership for Sustainable Development Data’s API Highways data infrastructure, and with experts from CARTO, Datavized, Urban Things, and the Bristol City Council Innovation Team. There will also be a series of flash talks from data for development experts representing Bristol, Bogota, and Sierra Leone."
+"Format: The data dive will give participants the opportunity to engage with the Global Partnership for Sustainable Development Data’s API Highways data infrastructure, and with experts from CARTO, Datavized, Urban Things, and the Bristol City Council Innovation Team. There will also be a series of flash talks from data for development experts representing Bristol, Bogota, and Sierra Leone"
 
 ---
 Data for Development Festival [21-23 March 2018] :
 
 * [Event page](http://www.data4sdgs.org/news/data-development-festival)
-* ['Why We Meet'](http://www.data4sdgs.org/news/thoughts-ahead-data-development-festival-why-we-meet)
+* ['Why We Meet' blogpost](http://www.data4sdgs.org/news/thoughts-ahead-data-development-festival-why-we-meet)
